@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Card } from '@/db'
+import { newCardsLeft, type Card, type Deck } from '@/db'
 import { afterAnswer, answer, buildSession, deckCounts, formatInterval, newSrs, pickNext, Rating, State } from '@/srs'
 
 const NOW = new Date('2026-01-10T12:00:00').getTime()
@@ -43,6 +43,14 @@ describe('session', () => {
     const cards = [card('c', newSrs(NOW), 3), card('a', newSrs(NOW), 1), card('b', newSrs(NOW), 2)]
     expect(buildSession(cards, 2, NOW).pending).toEqual(['a', 'b'])
     expect(buildSession(cards, 0, NOW).pending).toEqual([])
+  })
+
+  it('includes every new card when the deck has no limit', () => {
+    const deck: Deck = { id: 'd', name: 'D', description: '', createdAt: 0, updatedAt: 0 }
+    const cards = Array.from({ length: 30 }, (_, i) => card(`c${i}`, newSrs(NOW), i))
+    expect(buildSession(cards, newCardsLeft(deck, 25), NOW).pending).toHaveLength(30)
+    expect(deckCounts(cards, newCardsLeft(deck, 25), NOW).newCount).toBe(30)
+    expect(newCardsLeft({ ...deck, newPerDay: 20 }, 5)).toBe(15)
   })
 
   it('includes due reviews and skips future ones', () => {

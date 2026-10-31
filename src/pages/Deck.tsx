@@ -4,7 +4,7 @@ import { backupFileName, createBackup, saveFile } from '@/backup'
 import { Counts } from '@/components/Counts'
 import { Header } from '@/components/Header'
 import { toDelimited } from '@/csv'
-import { db, deleteDeck, newCardsStudiedToday, type Card } from '@/db'
+import { db, deleteDeck, newCardsLeft, newCardsStudiedToday, type Card } from '@/db'
 import { useNow } from '@/hooks'
 import { useImageUrl } from '@/images'
 import { navigate } from '@/router'
@@ -50,7 +50,7 @@ export function DeckPage({ deckId }: { deckId: string }) {
   if (deck === null) return <NotFound />
   if (!deck || !cards) return null
 
-  const counts = deckCounts(cards, deck.newPerDay - (newToday ?? 0), now)
+  const counts = deckCounts(cards, newCardsLeft(deck, newToday ?? 0), now)
   const dueNow = counts.review + counts.learning + counts.newCount
 
   async function exportDeck(includeProgress: boolean) {

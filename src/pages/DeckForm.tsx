@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Header } from '@/components/Header'
-import { db, DEFAULT_NEW_PER_DAY, newId } from '@/db'
+import { db, newId } from '@/db'
 import { navigate } from '@/router'
 
 export function DeckForm({ deckId }: { deckId?: string }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [newPerDay, setNewPerDay] = useState(DEFAULT_NEW_PER_DAY)
+  const [newPerDay, setNewPerDay] = useState('')
   const [loaded, setLoaded] = useState(!deckId)
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export function DeckForm({ deckId }: { deckId?: string }) {
       if (!d) return navigate('/', true)
       setName(d.name)
       setDescription(d.description)
-      setNewPerDay(d.newPerDay)
+      setNewPerDay(d.newPerDay == null ? '' : String(d.newPerDay))
       setLoaded(true)
     })
   }, [deckId])
@@ -23,7 +23,8 @@ export function DeckForm({ deckId }: { deckId?: string }) {
   async function save(e: React.FormEvent) {
     e.preventDefault()
     const now = Date.now()
-    const clean = { name: name.trim() || 'Untitled deck', description: description.trim(), newPerDay: Math.max(0, newPerDay) }
+    const limit = newPerDay.trim() === '' ? undefined : Math.max(0, Math.floor(Number(newPerDay)) || 0)
+    const clean = { name: name.trim() || 'Untitled deck', description: description.trim(), newPerDay: limit }
     if (deckId) {
       await db.decks.update(deckId, { ...clean, updatedAt: now })
       navigate(`/deck/${deckId}`, true)
@@ -51,16 +52,19 @@ export function DeckForm({ deckId }: { deckId?: string }) {
             <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
           </label>
           <label className="field">
-            <span>New cards per day</span>
+            <span>
+              New cards per day <span className="muted">(optional)</span>
+            </span>
             <input
               type="number"
               inputMode="numeric"
               min={0}
               max={9999}
               value={newPerDay}
-              onChange={(e) => setNewPerDay(Number(e.target.value))}
+              onChange={(e) => setNewPerDay(e.target.value)}
+              placeholder="No limit"
             />
-            <small className="muted">How many unseen cards to introduce each day. Reviews are never limited.</small>
+            <small className="muted">Leave blank to study every new card. Set a number to spread them out over days.</small>
           </label>
           <button className="btn primary big" type="submit">
             {deckId ? 'Save' : 'Create deck'}

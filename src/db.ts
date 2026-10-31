@@ -17,7 +17,7 @@ export interface Deck {
   id: string
   name: string
   description: string
-  newPerDay: number
+  newPerDay?: number
   createdAt: number
   updatedAt: number
 }
@@ -64,6 +64,15 @@ export class FlashDB extends Dexie {
       images: 'id',
       reviews: '++id, cardId, deckId, at',
     })
+    // 20 used to be the default limit, so treat it as never chosen
+    this.version(2).upgrade((tx) =>
+      tx
+        .table('decks')
+        .toCollection()
+        .modify((d: Deck) => {
+          if (d.newPerDay === 20) delete d.newPerDay
+        }),
+    )
   }
 }
 
@@ -74,7 +83,9 @@ export function newId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 12)
 }
 
-export const DEFAULT_NEW_PER_DAY = 20
+export function newCardsLeft(deck: Deck, newToday: number): number {
+  return deck.newPerDay == null ? Infinity : deck.newPerDay - newToday
+}
 
 export function cardImageIds(card: Pick<Card, 'frontImage' | 'backImage'>): string[] {
   return [card.frontImage, card.backImage].filter((x): x is string => !!x)

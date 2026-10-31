@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { CardFace, FlipCard } from '@/components/CardFace'
 import { Header } from '@/components/Header'
 import { SrsIntro } from '@/components/SrsIntro'
-import { db, newCardsStudiedToday, type Card } from '@/db'
+import { db, newCardsLeft, newCardsStudiedToday, type Card } from '@/db'
 import { useKeys } from '@/keys'
 import { NotFound } from '@/pages/Deck'
 import {
@@ -60,7 +60,7 @@ export function Study({ deckId }: { deckId: string }) {
 
   function start(extraNew: number) {
     if (!deck || !cards || newToday === undefined) return
-    const s = buildSession(cards, deck.newPerDay - newToday + extraNew)
+    const s = buildSession(cards, newCardsLeft(deck, newToday) + extraNew)
     setSession(s)
     advance(s, null)
   }
@@ -124,7 +124,7 @@ export function Study({ deckId }: { deckId: string }) {
   if (deck === null) return <NotFound />
   if (!deck || !cards || newToday === undefined) return null
   if (!session) {
-    const counts = deckCounts(cards, deck.newPerDay - newToday)
+    const counts = deckCounts(cards, newCardsLeft(deck, newToday))
     const moreNew = cards.filter(isNew).length - counts.newCount
     return <SrsIntro deck={deck} counts={counts} moreNew={moreNew} onStart={start} />
   }

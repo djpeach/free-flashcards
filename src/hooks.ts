@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, startOfToday, type Card } from '@/db'
+import { db, newCardsLeft, startOfToday, type Card } from '@/db'
 import { deckCounts, type DeckCounts } from '@/srs'
 
 export function useNow(intervalMs = 60_000): number {
@@ -29,7 +29,7 @@ export function useAllDeckCounts(now: number): Map<string, DeckCounts> | undefin
     const out = new Map<string, DeckCounts>()
     for (const d of decks) {
       const newToday = todays.filter((r) => r.deckId === d.id && r.wasNew).length
-      out.set(d.id, deckCounts(byDeck.get(d.id) ?? [], d.newPerDay - newToday, now))
+      out.set(d.id, deckCounts(byDeck.get(d.id) ?? [], newCardsLeft(d, newToday), now))
     }
     return out
   }, [now])

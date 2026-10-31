@@ -1,4 +1,4 @@
-import { db as defaultDb, DEFAULT_NEW_PER_DAY, type Card, type Deck, type FlashDB, type SrsState } from '@/db'
+import { db as defaultDb, type Card, type Deck, type FlashDB, type SrsState } from '@/db'
 import { newSrs } from '@/srs'
 
 export const FORMAT = 'free-flashcards'
@@ -71,7 +71,7 @@ export async function importBackup(
         id: String(d.id),
         name: String(d.name ?? 'Untitled deck'),
         description: String(d.description ?? ''),
-        newPerDay: Number(d.newPerDay) || DEFAULT_NEW_PER_DAY,
+        newPerDay: d.newPerDay == null ? undefined : Number(d.newPerDay),
         createdAt: Number(d.createdAt) || now,
         updatedAt: Number(d.updatedAt) || now,
       })

@@ -1,4 +1,4 @@
-import { db, DEFAULT_NEW_PER_DAY, newId } from '@/db'
+import { db, newId } from '@/db'
 import { newSrs } from '@/srs'
 
 const CAPITALS: [string, string][] = [
@@ -22,7 +22,6 @@ export async function createSampleDeck(): Promise<string> {
       id: deckId,
       name: 'World capitals (sample)',
       description: 'A small deck to try things out. Delete it whenever.',
-      newPerDay: DEFAULT_NEW_PER_DAY,
       createdAt: now,
       updatedAt: now,
     })
