@@ -121,7 +121,7 @@ export function Settings() {
         <section className="card stack-sm">
           <h2>Keyboard shortcuts</h2>
           <p className="small muted">
-            Space to flip. 1 to 4 to rate (Wrong, Hard, Ok, Easy). Z to undo. In Free Drill, 1 is missed and 2 is got it.
+            Space to flip. 1 to 4 to rate (Wrong, Hard, Ok, Easy). N to show notes. Z to undo. In Free Drill, 1 is missed and 2 is got it.
           </p>
         </section>
 

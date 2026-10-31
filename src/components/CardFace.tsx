@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useImageUrl } from '@/images'
+import { useKeys } from '@/keys'
 
 function sizeClass(text: string): string {
   const n = text.length
@@ -47,5 +49,35 @@ export function FlipCard({
         </div>
       </div>
     </button>
+  )
+}
+
+export function WithNotes({ notes, children }: { notes?: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  const has = !!notes?.trim()
+  useKeys((key) => {
+    if (has && key.toLowerCase() === 'n') setOpen((o) => !o)
+  })
+  return (
+    <div className="card-stage">
+      {children}
+      {has && (
+        <>
+          <button
+            type="button"
+            className={`notes-toggle ${open ? 'on' : ''}`}
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+          >
+            {open ? 'Hide notes' : 'Notes'}
+          </button>
+          {open && (
+            <div className="notes-panel" role="note">
+              {notes}
+            </div>
+          )}
+        </>
+      )}
+    </div>
   )
 }

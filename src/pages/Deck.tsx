@@ -44,7 +44,7 @@ export function DeckPage({ deckId }: { deckId: string }) {
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase()
     const list = [...(cards ?? [])].reverse()
-    return needle ? list.filter((c) => (c.front + '\n' + c.back).toLowerCase().includes(needle)) : list
+    return needle ? list.filter((c) => [c.front, c.back, c.notes ?? ''].join('\n').toLowerCase().includes(needle)) : list
   }, [cards, q])
 
   if (deck === null) return <NotFound />

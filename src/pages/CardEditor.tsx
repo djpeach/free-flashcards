@@ -46,6 +46,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
   const [deckId, setDeckId] = useState(initialDeckId ?? '')
   const [front, setFront] = useState('')
   const [back, setBack] = useState('')
+  const [notes, setNotes] = useState('')
   const [frontImg, setFrontImg] = useImg()
   const [backImg, setBackImg] = useImg()
   const [saving, setSaving] = useState(false)
@@ -60,6 +61,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
       setDeckId(c.deckId)
       setFront(c.front)
       setBack(c.back)
+      setNotes(c.notes ?? '')
       setFrontImg({ id: c.frontImage })
       setBackImg({ id: c.backImage })
     })
@@ -83,12 +85,13 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
       const now = Date.now()
       const frontImage = await resolveImg(frontImg, original?.frontImage)
       const backImage = await resolveImg(backImg, original?.backImage)
+      const cleanNotes = notes.trim() || undefined
       if (original) {
-        await db.cards.put({ ...original, deckId, front, back, frontImage, backImage, updatedAt: now })
+        await db.cards.put({ ...original, deckId, front, back, frontImage, backImage, notes: cleanNotes, updatedAt: now })
         toast('Saved')
         navigate(`/deck/${deckId}`, true)
       } else {
-        await db.cards.add({ id: newId(), deckId, front, back, frontImage, backImage, srs: newSrs(now), createdAt: now, updatedAt: now })
+        await db.cards.add({ id: newId(), deckId, front, back, frontImage, backImage, notes: cleanNotes, srs: newSrs(now), createdAt: now, updatedAt: now })
         requestPersistence()
         if (!addAnother) {
           toast('Card saved')
@@ -97,6 +100,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
         }
         setFront('')
         setBack('')
+        setNotes('')
         setFrontImg({})
         setBackImg({})
         setAdded((n) => n + 1)
@@ -185,6 +189,18 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
             </label>
             <ImageField imageId={backImg.id} pendingUrl={backImg.url} onPick={pick(setBackImg)} onRemove={() => setBackImg({})} />
           </div>
+          <label className="field">
+            <span>
+              Notes <span className="muted">(optional)</span>
+            </span>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Extra context, a mnemonic, where it came from..."
+            />
+            <small className="muted">Tap Notes on the card while studying to see it.</small>
+          </label>
           {original ? (
             <button className="btn primary big" type="submit" disabled={isEmpty || saving}>
               {saving ? 'Saving...' : 'Save'}

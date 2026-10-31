@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { CardFace, FlipCard } from '@/components/CardFace'
+import { CardFace, FlipCard, WithNotes } from '@/components/CardFace'
 import { Header } from '@/components/Header'
 import { SrsIntro } from '@/components/SrsIntro'
 import { db, newCardsLeft, newCardsStudiedToday, type Card } from '@/db'
@@ -82,7 +82,13 @@ export function Study({ deckId }: { deckId: string }) {
       let reviewId = 0
       await db.transaction('rw', db.cards, db.reviews, async () => {
         await db.cards.update(current.id, { srs })
-        reviewId = (await db.reviews.add({ cardId: current.id, deckId, rating: grade, wasNew: isNew(current), at: now })) as number
+        reviewId = (await db.reviews.add({
+          cardId: current.id,
+          deckId,
+          rating: grade,
+          wasNew: isNew(current),
+          at: now,
+        })) as number
       })
       const next = afterAnswer(session, current.id, srs, now)
       setUndo({ card: current, reviewId, session })
@@ -183,18 +189,19 @@ export function Study({ deckId }: { deckId: string }) {
         actions={undoBtn}
       />
       <main className="page study">
-        <FlipCard
-          key={current.id}
-          flipped={flipped}
-          onFlip={() => setFlipped((f) => !f)}
-          front={<CardFace text={current.front} imageId={current.frontImage} />}
-          back={
-            <>
-              {current.front && <div className="face-context clamp">{current.front}</div>}
-              <CardFace text={current.back} imageId={current.backImage} />
-            </>
-          }
-        />
+        <WithNotes key={current.id} notes={current.notes}>
+          <FlipCard
+            flipped={flipped}
+            onFlip={() => setFlipped((f) => !f)}
+            front={<CardFace text={current.front} imageId={current.frontImage} />}
+            back={
+              <>
+                {current.front && <div className="face-context clamp">{current.front}</div>}
+                <CardFace text={current.back} imageId={current.backImage} />
+              </>
+            }
+          />
+        </WithNotes>
         <div className="answer-bar">
           {!flipped ? (
             <button className="btn primary big block" onClick={() => setFlipped(true)}>
@@ -202,14 +209,14 @@ export function Study({ deckId }: { deckId: string }) {
             </button>
           ) : (
             <>
-            <p className="grades-caption">How hard was that?</p>
-            <div className="grades">
-              {BUTTONS.map((b) => (
-                <button key={b.grade} className={`grade ${b.cls}`} onClick={() => rate(b.grade)} disabled={busy}>
-                  <span className="grade-label">{b.label}</span>
-                </button>
-              ))}
-            </div>
+              <p className="grades-caption">How hard was that?</p>
+              <div className="grades">
+                {BUTTONS.map((b) => (
+                  <button key={b.grade} className={`grade ${b.cls}`} onClick={() => rate(b.grade)} disabled={busy}>
+                    <span className="grade-label">{b.label}</span>
+                  </button>
+                ))}
+              </div>
             </>
           )}
         </div>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { CardFace, FlipCard } from '@/components/CardFace'
+import { CardFace, FlipCard, WithNotes } from '@/components/CardFace'
 import { Header } from '@/components/Header'
 import { db, type Card } from '@/db'
 import { useKeys } from '@/keys'
@@ -18,7 +18,10 @@ interface Run {
 
 function startRun(ids: string[], side: Side): Run {
   return {
-    queue: shuffle(ids).map((id) => ({ id, reversed: side === 'back' || (side === 'mixed' && Math.random() < 0.5) })),
+    queue: shuffle(ids).map((id) => ({
+      id,
+      reversed: side === 'back' || (side === 'mixed' && Math.random() < 0.5),
+    })),
     missed: new Set(),
     total: ids.length,
     seen: 0,
@@ -72,8 +75,8 @@ export function Drill({ deckId }: { deckId: string }) {
         <Header back={back} title="Free Drill" />
         <main className="page stack">
           <p className="muted">
-            Go through every card in <strong>{deck.name}</strong> in random order. Missed cards come back until you get them.
-            This doesn't change your study schedule.
+            Go through every card in <strong>{deck.name}</strong> in random order. Missed cards come back until you get them. This
+            doesn't change your study schedule.
           </p>
           <div className="field">
             <span>Show first</span>
@@ -141,13 +144,14 @@ export function Drill({ deckId }: { deckId: string }) {
         <div className="progress" aria-hidden="true">
           <div style={{ width: `${(run.seen / run.total) * 100}%` }} />
         </div>
-        <FlipCard
-          key={`${card.id}-${run.seen}-${run.queue.length}`}
-          flipped={flipped}
-          onFlip={() => setFlipped((f) => !f)}
-          front={<CardFace text={q.text} imageId={q.img} />}
-          back={<CardFace text={a.text} imageId={a.img} />}
-        />
+        <WithNotes key={`${card.id}-${run.seen}-${run.queue.length}`} notes={card.notes}>
+          <FlipCard
+            flipped={flipped}
+            onFlip={() => setFlipped((f) => !f)}
+            front={<CardFace text={q.text} imageId={q.img} />}
+            back={<CardFace text={a.text} imageId={a.img} />}
+          />
+        </WithNotes>
         <div className="answer-bar">
           {!flipped ? (
             <button className="btn primary big block" onClick={() => setFlipped(true)}>

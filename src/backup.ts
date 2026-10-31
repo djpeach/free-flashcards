@@ -88,6 +88,7 @@ export async function importBackup(
         back: String(c.back ?? ''),
         frontImage: c.frontImage || undefined,
         backImage: c.backImage || undefined,
+        notes: c.notes ? String(c.notes) : undefined,
         srs: c.srs ?? existing.get(c.id)?.srs ?? newSrs(now),
         createdAt: Number(c.createdAt) || now,
         updatedAt: Number(c.updatedAt) || now,

@@ -14,6 +14,7 @@ async function seed(db: FlashDB) {
     front: 'Q',
     back: 'A',
     frontImage: 'img1',
+    notes: 'Some context',
     srs: answer(newSrs(now), Rating.Easy, now),
     createdAt: now,
     updatedAt: now,
@@ -34,6 +35,7 @@ describe('backup', () => {
     expect(await importBackup(backup, dst)).toEqual({ decks: 1, cards: 1, images: 1 })
     const card = await dst.cards.get('c1')
     expect(card?.srs).toEqual((await src.cards.get('c1'))?.srs)
+    expect(card?.notes).toBe('Some context')
     const img = await dst.images.get('img1')
     expect([...new Uint8Array(img!.data)]).toEqual([1, 2, 3, 250])
   })

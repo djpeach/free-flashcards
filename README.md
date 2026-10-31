@@ -10,6 +10,7 @@ After that it opens full screen and works offline.
 ## What it does
 
 - Decks and cards, with text and images on either side
+- Optional notes on a card for extra context, hidden until you tap Notes while studying
 - Spaced Repetition (Wrong, Hard, Ok, Easy) using [FSRS](https://github.com/open-spaced-repetition/ts-fsrs), the same algorithm modern Anki uses
 - Optional daily limit on new cards per deck (no limit by default), plus "learn 10 more" when you want extra
 - Free Drill: go through the whole deck shuffled, front first, back first, or mixed. Doesn't touch your schedule.
@@ -17,7 +18,7 @@ After that it opens full screen and works offline.
 - Import from text, CSV, spreadsheets, or Quizlet exports
 - Export a full backup, share a single deck (with or without your progress), or export a deck as CSV
 - Search cards in a deck
-- Keyboard shortcuts on desktop (space to flip, 1 to 4 to rate, z to undo)
+- Keyboard shortcuts on desktop (space to flip, 1 to 4 to rate, n for notes, z to undo)
 - Light and dark mode
 
 > Images get resized to 1280px max before saving, so a deck full of phone photos doesn't eat your storage.

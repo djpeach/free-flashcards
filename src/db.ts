@@ -29,6 +29,7 @@ export interface Card {
   back: string
   frontImage?: string
   backImage?: string
+  notes?: string
   srs: SrsState
   createdAt: number
   updatedAt: number
