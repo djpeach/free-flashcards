@@ -784,6 +784,17 @@ textarea {
   position: sticky;
   bottom: 0;
   padding-bottom: env(safe-area-inset-bottom);
+  display: grid;
+}
+
+/* both states share one cell so the bar, and the card above it, keep the same height on flip */
+.answer-bar > * {
+  grid-area: 1 / 1;
+  align-self: end;
+}
+
+.answer-bar > .is-hidden {
+  visibility: hidden;
 }
 
 .grades {

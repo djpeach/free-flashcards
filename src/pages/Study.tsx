@@ -203,22 +203,19 @@ export function Study({ deckId }: { deckId: string }) {
           />
         </WithNotes>
         <div className="answer-bar">
-          {!flipped ? (
-            <button className="btn primary big block" onClick={() => setFlipped(true)}>
-              Show answer
-            </button>
-          ) : (
-            <>
-              <p className="grades-caption">How hard was that?</p>
-              <div className="grades">
-                {BUTTONS.map((b) => (
-                  <button key={b.grade} className={`grade ${b.cls}`} onClick={() => rate(b.grade)} disabled={busy}>
-                    <span className="grade-label">{b.label}</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+          <button className={`btn primary big block ${flipped ? 'is-hidden' : ''}`} onClick={() => setFlipped(true)}>
+            Show answer
+          </button>
+          <div className={flipped ? '' : 'is-hidden'}>
+            <p className="grades-caption">How hard was that?</p>
+            <div className="grades">
+              {BUTTONS.map((b) => (
+                <button key={b.grade} className={`grade ${b.cls}`} onClick={() => rate(b.grade)} disabled={busy}>
+                  <span className="grade-label">{b.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     </>

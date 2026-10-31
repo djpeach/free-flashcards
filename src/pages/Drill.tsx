@@ -153,20 +153,17 @@ export function Drill({ deckId }: { deckId: string }) {
           />
         </WithNotes>
         <div className="answer-bar">
-          {!flipped ? (
-            <button className="btn primary big block" onClick={() => setFlipped(true)}>
-              Flip
+          <button className={`btn primary big block ${flipped ? 'is-hidden' : ''}`} onClick={() => setFlipped(true)}>
+            Flip
+          </button>
+          <div className={`grades two ${flipped ? '' : 'is-hidden'}`}>
+            <button className="grade again" onClick={() => mark(false)}>
+              <span className="grade-label">Missed it</span>
             </button>
-          ) : (
-            <div className="grades two">
-              <button className="grade again" onClick={() => mark(false)}>
-                <span className="grade-label">Missed it</span>
-              </button>
-              <button className="grade good" onClick={() => mark(true)}>
-                <span className="grade-label">Got it</span>
-              </button>
-            </div>
-          )}
+            <button className="grade good" onClick={() => mark(true)}>
+              <span className="grade-label">Got it</span>
+            </button>
+          </div>
         </div>
       </main>
     </>
