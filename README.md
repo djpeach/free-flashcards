@@ -52,25 +52,18 @@ Other scripts:
 
 ## Hosting
 
-It's static files, so hosting is free.
+It's live on [Vercel](https://vercel.com): https://free-flashcards-omega.vercel.app
 
-Right now it's on GitHub Pages: https://djpeach.github.io/free-flashcards/
+Vercel is hooked up to this GitHub repo.
+Every push to `main` deploys to production, and PRs get their own preview url.
 
-Every push to `main` runs the tests and deploys (see `.github/workflows/deploy.yml`).
-
-If you'd rather move it somewhere else, I'd go with [Cloudflare Pages](https://developers.cloudflare.com/pages/).
-Free, unlimited bandwidth, https included.
-
-1. Push this repo to GitHub.
-2. In Cloudflare, go to Workers & Pages, then Create, then Pages, then connect the repo.
-3. Build command: `npm run build`. Output directory: `dist`.
-4. Done. You get a `something.pages.dev` url.
+It's just static files, so any static host works.
+[Cloudflare Pages](https://developers.cloudflare.com/pages/) and [Netlify](https://www.netlify.com) are good free options.
+Build command `npm run build`, output directory `dist`.
 
 A custom domain is the only thing that costs money, around $10 a year (totally optional).
 
-[Netlify](https://www.netlify.com) works too.
-
-> GitHub Pages serves the app under a subpath (`/free-flashcards/`). The workflow handles that with `BASE_PATH`. Other hosts serve from the root, so a plain `npm run build` is all they need.
+> To host it under a subpath (like GitHub Pages does), build with `BASE_PATH=/your-subpath/ npm run build`.
 
 ## Data and storage
 
