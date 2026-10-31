@@ -18,7 +18,7 @@ After that it opens full screen and works offline.
 - Import from text, CSV, spreadsheets, or Quizlet exports
 - Export a full backup, share a single deck (with or without your progress), or export a deck as CSV
 - Search cards in a deck
-- Keyboard shortcuts on desktop (space to flip, 1 to 4 to rate, n for notes, z to undo)
+- Keyboard shortcuts on desktop (space to flip, 1 to 4 to rate, n for notes, e to edit, z to undo)
 - Light and dark mode
 
 > Images get resized to 1280px max before saving, so a deck full of phone photos doesn't eat your storage.

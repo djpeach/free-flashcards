@@ -183,6 +183,33 @@ p {
   border-radius: 10px;
 }
 
+button.icon-btn,
+button.back {
+  appearance: none;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.back {
+  color: var(--accent);
+}
+
+.icon-btn.accent {
+  color: var(--accent);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Page */
 .page {
   flex: 1;

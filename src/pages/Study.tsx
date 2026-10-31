@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CardFace, FlipCard, hasNotes, WithNotes } from '@/components/CardFace'
 import { Header } from '@/components/Header'
+import { EditButton, EditOverlay } from '@/components/EditCard'
 import { SrsIntro } from '@/components/SrsIntro'
 import { db, newCardsLeft, newCardsStudiedToday, type Card } from '@/db'
 import { useKeys } from '@/keys'
@@ -45,6 +46,7 @@ export function Study({ deckId }: { deckId: string }) {
   const [undo, setUndo] = useState<UndoState | null>(null)
   const [reviewed, setReviewed] = useState(0)
   const [busy, setBusy] = useState(false)
+  const [editing, setEditing] = useState<string | null>(null)
 
   const advance = useCallback((s: Session, lastId: string | null) => {
     const p = pickNext(s, lastId)
@@ -120,8 +122,10 @@ export function Study({ deckId }: { deckId: string }) {
   }
 
   useKeys((key) => {
+    if (editing) return void (key === 'Escape' && setEditing(null))
     if (key === 'z' || key === 'u') return void undoLast()
     if (!current) return
+    if (key === 'e') return setEditing(current.id)
     if (!flipped && (key === ' ' || key === 'Enter')) return setFlipped(true)
     if (flipped && (key === ' ' || key === 'Enter')) return void rate(Rating.Good)
     if (flipped && ['1', '2', '3', '4'].includes(key)) return void rate(BUTTONS[Number(key) - 1].grade)
@@ -186,7 +190,12 @@ export function Study({ deckId }: { deckId: string }) {
             <span className="c-due">{reviewLeft}</span>
           </span>
         }
-        actions={undoBtn}
+        actions={
+          <>
+            <EditButton onClick={() => setEditing(current.id)} />
+            {undoBtn}
+          </>
+        }
       />
       <main className="page study">
         <WithNotes key={current.id} notes={current.notes} reserve={cards.some(hasNotes)}>
@@ -218,6 +227,7 @@ export function Study({ deckId }: { deckId: string }) {
           </div>
         </div>
       </main>
+      {editing && <EditOverlay cardId={editing} onClose={() => setEditing(null)} />}
     </>
   )
 }

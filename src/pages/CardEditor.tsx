@@ -40,7 +40,15 @@ function imageFromPaste(e: React.ClipboardEvent): File | null {
   return null
 }
 
-export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string; cardId?: string }) {
+export function CardEditor({
+  deckId: initialDeckId,
+  cardId,
+  onClose,
+}: {
+  deckId?: string
+  cardId?: string
+  onClose?: () => void
+}) {
   const decks = useLiveQuery(() => db.decks.orderBy('name').toArray())
   const [original, setOriginal] = useState<Card | null>(null)
   const [deckId, setDeckId] = useState(initialDeckId ?? '')
@@ -56,7 +64,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
   useEffect(() => {
     if (!cardId) return
     db.cards.get(cardId).then((c) => {
-      if (!c) return navigate('/', true)
+      if (!c) return onClose ? onClose() : navigate('/', true)
       setOriginal(c)
       setDeckId(c.deckId)
       setFront(c.front)
@@ -89,7 +97,8 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
       if (original) {
         await db.cards.put({ ...original, deckId, front, back, frontImage, backImage, notes: cleanNotes, updatedAt: now })
         toast('Saved')
-        navigate(`/deck/${deckId}`, true)
+        if (onClose) onClose()
+        else navigate(`/deck/${deckId}`, true)
       } else {
         await db.cards.add({ id: newId(), deckId, front, back, frontImage, backImage, notes: cleanNotes, srs: newSrs(now), createdAt: now, updatedAt: now })
         requestPersistence()
@@ -135,7 +144,10 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
 
   return (
     <>
-      <Header back={{ href: backHref, label: added ? 'Done' : 'Back' }} title={original ? 'Edit card' : 'Add card'} />
+      <Header
+        back={onClose ? { onClick: onClose, label: 'Cancel' } : { href: backHref, label: added ? 'Done' : 'Back' }}
+        title={original ? 'Edit card' : 'Add card'}
+      />
       <main className="page">
         <form
           className="stack"
@@ -144,7 +156,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
             save(!original)
           }}
         >
-          {decks && decks.length > 1 && (
+          {!onClose && decks && decks.length > 1 && (
             <label className="field">
               <span>Deck</span>
               <select value={deckId} onChange={(e) => setDeckId(e.target.value)}>
@@ -199,7 +211,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Extra context, a mnemonic, where it came from..."
             />
-            <small className="muted">Tap Notes on the card while studying to see it.</small>
+            <small className="muted">Tap Notes while studying to see it.</small>
           </label>
           {original ? (
             <button className="btn primary big" type="submit" disabled={isEmpty || saving}>
@@ -222,7 +234,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
           )}
         </form>
 
-        {original && (
+        {original && !onClose && (
           <section className="options">
             <button className="btn block" onClick={resetProgress}>
               Reset progress

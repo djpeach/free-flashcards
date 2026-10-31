@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CardFace, FlipCard, hasNotes, WithNotes } from '@/components/CardFace'
+import { EditButton, EditOverlay } from '@/components/EditCard'
 import { Header } from '@/components/Header'
 import { db, type Card } from '@/db'
 import { useKeys } from '@/keys'
@@ -35,6 +36,7 @@ export function Drill({ deckId }: { deckId: string }) {
   const [side, setSide] = useState<Side>(() => (localStorage.getItem('drillSide') as Side) || 'front')
   const [run, setRun] = useState<Run | null>(null)
   const [flipped, setFlipped] = useState(false)
+  const [editing, setEditing] = useState<string | null>(null)
 
   const head = run?.queue[0]
   const card: Card | undefined = head ? byId.get(head.id) : undefined
@@ -59,7 +61,9 @@ export function Drill({ deckId }: { deckId: string }) {
   }
 
   useKeys((key) => {
+    if (editing) return void (key === 'Escape' && setEditing(null))
     if (!card) return
+    if (key === 'e') return setEditing(card.id)
     if (key === ' ' || key === 'Enter') return flipped ? mark(true) : setFlipped(true)
     if (flipped && (key === '1' || key === 'ArrowLeft')) return mark(false)
     if (flipped && (key === '2' || key === 'ArrowRight')) return mark(true)
@@ -139,6 +143,7 @@ export function Drill({ deckId }: { deckId: string }) {
             {run.seen} / {run.total}
           </span>
         }
+        actions={<EditButton onClick={() => setEditing(card.id)} />}
       />
       <main className="page study">
         <div className="progress" aria-hidden="true">
@@ -166,6 +171,7 @@ export function Drill({ deckId }: { deckId: string }) {
           </div>
         </div>
       </main>
+      {editing && <EditOverlay cardId={editing} onClose={() => setEditing(null)} />}
     </>
   )
 }
