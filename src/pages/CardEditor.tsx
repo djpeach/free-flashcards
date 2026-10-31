@@ -76,8 +76,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
 
   const isEmpty = !front.trim() && !back.trim() && !frontImg.id && !frontImg.file && !backImg.id && !backImg.file
 
-  async function save(e: React.FormEvent) {
-    e.preventDefault()
+  async function save(addAnother: boolean) {
     if (isEmpty || saving) return
     setSaving(true)
     try {
@@ -91,12 +90,17 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
       } else {
         await db.cards.add({ id: newId(), deckId, front, back, frontImage, backImage, srs: newSrs(now), createdAt: now, updatedAt: now })
         requestPersistence()
+        if (!addAnother) {
+          toast('Card saved')
+          navigate(`/deck/${deckId}`, true)
+          return
+        }
         setFront('')
         setBack('')
         setFrontImg({})
         setBackImg({})
         setAdded((n) => n + 1)
-        toast('Card added')
+        toast('Card saved. Add another.')
         frontRef.current?.focus()
       }
     } catch (err) {
@@ -129,7 +133,13 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
     <>
       <Header back={{ href: backHref, label: added ? 'Done' : 'Back' }} title={original ? 'Edit card' : 'Add card'} />
       <main className="page">
-        <form className="stack" onSubmit={save}>
+        <form
+          className="stack"
+          onSubmit={(e) => {
+            e.preventDefault()
+            save(!original)
+          }}
+        >
           {decks && decks.length > 1 && (
             <label className="field">
               <span>Deck</span>
@@ -175,13 +185,24 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
             </label>
             <ImageField imageId={backImg.id} pendingUrl={backImg.url} onPick={pick(setBackImg)} onRemove={() => setBackImg({})} />
           </div>
-          <button className="btn primary big" type="submit" disabled={isEmpty || saving}>
-            {saving ? 'Saving...' : original ? 'Save' : 'Add card'}
-          </button>
-          {!original && added > 0 && (
-            <p className="muted center small">
-              {added} added. Keep going, or tap <a href={`#${backHref}`}>Done</a>.
-            </p>
+          {original ? (
+            <button className="btn primary big" type="submit" disabled={isEmpty || saving}>
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          ) : (
+            <div className="stack-sm">
+              <button className="btn primary big" type="submit" disabled={isEmpty || saving}>
+                Save & Add Another
+              </button>
+              <button className="btn big" type="button" disabled={isEmpty || saving} onClick={() => save(false)}>
+                Save Card
+              </button>
+              {added > 0 && (
+                <p className="muted center small">
+                  {added} saved so far
+                </p>
+              )}
+            </div>
           )}
         </form>
 
