@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { CardFace, FlipCard, WithNotes } from '@/components/CardFace'
+import { CardFace, FlipCard, hasNotes, WithNotes } from '@/components/CardFace'
 import { Header } from '@/components/Header'
 import { SrsIntro } from '@/components/SrsIntro'
 import { db, newCardsLeft, newCardsStudiedToday, type Card } from '@/db'
@@ -189,7 +189,7 @@ export function Study({ deckId }: { deckId: string }) {
         actions={undoBtn}
       />
       <main className="page study">
-        <WithNotes key={current.id} notes={current.notes}>
+        <WithNotes key={current.id} notes={current.notes} reserve={cards.some(hasNotes)}>
           <FlipCard
             flipped={flipped}
             onFlip={() => setFlipped((f) => !f)}

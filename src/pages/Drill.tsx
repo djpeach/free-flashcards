@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { CardFace, FlipCard, WithNotes } from '@/components/CardFace'
+import { CardFace, FlipCard, hasNotes, WithNotes } from '@/components/CardFace'
 import { Header } from '@/components/Header'
 import { db, type Card } from '@/db'
 import { useKeys } from '@/keys'
@@ -144,7 +144,7 @@ export function Drill({ deckId }: { deckId: string }) {
         <div className="progress" aria-hidden="true">
           <div style={{ width: `${(run.seen / run.total) * 100}%` }} />
         </div>
-        <WithNotes key={`${card.id}-${run.seen}-${run.queue.length}`} notes={card.notes}>
+        <WithNotes key={`${card.id}-${run.seen}-${run.queue.length}`} notes={card.notes} reserve={!!cards?.some(hasNotes)}>
           <FlipCard
             flipped={flipped}
             onFlip={() => setFlipped((f) => !f)}

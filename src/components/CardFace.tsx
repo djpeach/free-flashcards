@@ -52,32 +52,38 @@ export function FlipCard({
   )
 }
 
-export function WithNotes({ notes, children }: { notes?: string; children: React.ReactNode }) {
+export const hasNotes = (c: { notes?: string }) => !!c.notes?.trim()
+
+export function WithNotes({ notes, reserve, children }: { notes?: string; reserve: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const has = !!notes?.trim()
   useKeys((key) => {
     if (has && key.toLowerCase() === 'n') setOpen((o) => !o)
   })
   return (
-    <div className="card-stage">
-      {children}
-      {has && (
-        <>
-          <button
-            type="button"
-            className={`notes-toggle ${open ? 'on' : ''}`}
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-          >
-            {open ? 'Hide notes' : 'Notes'}
-          </button>
-          {open && (
-            <div className="notes-panel" role="note">
-              {notes}
-            </div>
+    <>
+      {(reserve || has) && (
+        <div className="notes-row">
+          {has && (
+            <button
+              type="button"
+              className={`notes-toggle ${open ? 'on' : ''}`}
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+            >
+              {open ? 'Hide notes' : 'Notes'}
+            </button>
           )}
-        </>
+        </div>
       )}
-    </div>
+      <div className="card-stage">
+        {children}
+        {has && open && (
+          <div className="notes-panel" role="note">
+            {notes}
+          </div>
+        )}
+      </div>
+    </>
   )
 }
