@@ -5,17 +5,9 @@ import { Header } from '@/components/Header'
 import { db, type Card } from '@/db'
 import { useKeys } from '@/keys'
 import { NotFound } from '@/pages/Deck'
+import { shuffle } from '@/srs'
 
 type Side = 'front' | 'back' | 'mixed'
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
 
 interface Run {
   queue: { id: string; reversed: boolean }[]

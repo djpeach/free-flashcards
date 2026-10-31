@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { newCardsLeft, type Card, type Deck } from '@/db'
 import { afterAnswer, answer, buildSession, deckCounts, formatInterval, newSrs, pickNext, Rating, State } from '@/srs'
 
+const inOrder = <T>(arr: T[]) => arr
+
 const NOW = new Date('2026-01-10T12:00:00').getTime()
 const MIN = 60_000
 const DAY = 24 * 60 * MIN
@@ -41,8 +43,16 @@ describe('answer', () => {
 describe('session', () => {
   it('limits new cards and orders them by creation', () => {
     const cards = [card('c', newSrs(NOW), 3), card('a', newSrs(NOW), 1), card('b', newSrs(NOW), 2)]
-    expect(buildSession(cards, 2, NOW).pending).toEqual(['a', 'b'])
+    expect(buildSession(cards, 2, NOW, inOrder).pending).toEqual(['a', 'b'])
     expect(buildSession(cards, 0, NOW).pending).toEqual([])
+  })
+
+  it('shuffles the session but still introduces the oldest new cards first', () => {
+    const cards = Array.from({ length: 40 }, (_, i) => card(`c${i}`, newSrs(NOW), i))
+    const oldest = cards.slice(0, 20).map((c) => c.id)
+    const runs = Array.from({ length: 5 }, () => buildSession(cards, 20, NOW).pending)
+    for (const r of runs) expect([...r].sort()).toEqual([...oldest].sort())
+    expect(runs.some((r) => r.join() !== oldest.join())).toBe(true)
   })
 
   it('includes every new card when the deck has no limit', () => {
@@ -63,7 +73,7 @@ describe('session', () => {
 
   it('brings an Again card back after other cards, then learns ahead when alone', () => {
     const cards = [card('a', newSrs(NOW), 1), card('b', newSrs(NOW), 2)]
-    let s = buildSession(cards, 10, NOW)
+    let s = buildSession(cards, 10, NOW, inOrder)
     expect(pickNext(s, null, NOW)).toMatchObject({ id: 'a' })
     const a = answer(cards[0].srs, Rating.Again, NOW)
     s = afterAnswer(s, 'a', a, NOW)

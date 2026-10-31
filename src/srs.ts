@@ -93,16 +93,25 @@ export interface Session {
   learning: { id: string; due: number }[]
 }
 
-export function buildSession(cards: Card[], newLimit: number, now = Date.now()): Session {
+export function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+export function buildSession(cards: Card[], newLimit: number, now = Date.now(), order: <T>(arr: T[]) => T[] = shuffle): Session {
   const learning = cards
     .filter((c) => isLearning(c) && c.srs.due <= now + LEARN_AHEAD_MS)
     .map((c) => ({ id: c.id, due: c.srs.due }))
-  const reviews = cards.filter((c) => !isNew(c) && !isLearning(c) && c.srs.due <= now).sort((a, b) => a.srs.due - b.srs.due)
+  const reviews = cards.filter((c) => !isNew(c) && !isLearning(c) && c.srs.due <= now)
   const fresh = cards
     .filter(isNew)
     .sort((a, b) => a.createdAt - b.createdAt)
     .slice(0, Math.max(0, newLimit))
-  return { pending: interleave(reviews.map((c) => c.id), fresh.map((c) => c.id)), learning }
+  return { pending: interleave(order(reviews.map((c) => c.id)), order(fresh.map((c) => c.id))), learning }
 }
 
 function interleave(a: string[], b: string[]): string[] {
