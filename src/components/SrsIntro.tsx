@@ -1,13 +1,14 @@
 import { Counts } from '@/components/Counts'
 import { Header } from '@/components/Header'
+import { useMemo } from 'react'
 import type { Deck } from '@/db'
-import type { DeckCounts } from '@/srs'
+import { formatInterval, newSrs, preview, Rating, type DeckCounts, type Grade } from '@/srs'
 
-const GRADES = [
-  { cls: 'again', label: 'Again', text: "Forgot it. It'll come right back." },
-  { cls: 'hard', label: 'Hard', text: 'Got it, but it was a struggle.' },
-  { cls: 'good', label: 'Good', text: 'Got it after a moment.' },
-  { cls: 'easy', label: 'Easy', text: 'Knew it instantly.' },
+const GRADES: { grade: Grade; cls: string; label: string; text: string }[] = [
+  { grade: Rating.Easy, cls: 'easy', label: 'Easy', text: 'Knew it instantly' },
+  { grade: Rating.Good, cls: 'good', label: 'Good', text: 'Got it' },
+  { grade: Rating.Hard, cls: 'hard', label: 'Hard', text: 'Barely got it' },
+  { grade: Rating.Again, cls: 'again', label: 'Wrong', text: "Didn't know it" },
 ]
 
 export function SrsIntro({
@@ -22,53 +23,33 @@ export function SrsIntro({
   onStart: (extraNew: number) => void
 }) {
   const total = counts.newCount + counts.learning + counts.review
+  const firstWait = useMemo(() => preview(newSrs()), [])
   return (
     <>
       <Header back={{ href: `/deck/${deck.id}`, label: 'Deck' }} title="Spaced Repetition" />
       <main className="page">
         <section className="card stack-sm">
           <h2>How it works</h2>
-          <p>
-            Every card gets its own schedule. Cards you know well come back less and less often. Cards you struggle with
-            come back sooner.
-          </p>
-          <p>
-            New cards are introduced a few at a time ({deck.newPerDay} a day for this deck, change it with Edit on the deck
-            page).
-          </p>
-          <p>A few minutes every day beats cramming.</p>
-        </section>
-
-        <section className="card stack-sm">
-          <h2>How to use it</h2>
-          <ol className="steps">
-            <li>Look at the front and try to recall the answer.</li>
-            <li>
-              Tap the card or <strong>Show answer</strong> to flip it.
-            </li>
-            <li>Grade yourself honestly:</li>
-          </ol>
+          <p>Flip each card, then rate how hard it was. That decides when you see it again.</p>
           <ul className="grade-guide">
             {GRADES.map((g) => (
               <li key={g.cls}>
                 <span className={`tag ${g.cls}`}>{g.label}</span>
                 <span>{g.text}</span>
+                <span className="when">{formatInterval(firstWait[g.grade])}</span>
               </li>
             ))}
           </ul>
-          <p className="muted small">Each button shows when you'll see the card next. Tapped the wrong one? Hit Undo.</p>
+          <p className="muted small">
+            Those times are for a new card. Every time you remember it, the wait gets longer: days, then weeks, then
+            months.
+          </p>
         </section>
 
         <section className="card stack-sm">
-          <h2>Today's session</h2>
+          <h2>Today</h2>
           <Counts counts={counts} />
-          <p className="muted small center">
-            {total > 0
-              ? `${total} ${total === 1 ? 'card' : 'cards'} to go through.`
-              : moreNew > 0
-                ? "Nothing due right now. You can learn some extra new cards if you'd like."
-                : 'Nothing due right now. Nice work.'}
-          </p>
+          {total === 0 && <p className="muted small center">Nothing due right now.</p>}
         </section>
 
         <div className="cta-bar">

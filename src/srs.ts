@@ -52,16 +52,17 @@ export function preview(s: SrsState, now = Date.now()): Record<Grade, number> {
 }
 
 export function formatInterval(ms: number): string {
+  const plural = (n: number, unit: string) => `${n} ${unit}${n === 1 ? '' : 's'}`
   const min = Math.max(1, Math.round(ms / 60000))
-  if (min < 60) return `${min}m`
+  if (min < 60) return `${min} min`
   const h = Math.round(min / 60)
-  if (h < 24) return `${h}h`
+  if (h < 24) return `${h} hr`
   const d = Math.round(h / 24)
-  if (d < 31) return `${d}d`
-  const mo = d / 30.4
-  if (mo < 12) return `${Math.round(mo)}mo`
+  if (d < 31) return plural(d, 'day')
+  const mo = Math.round(d / 30.4)
+  if (mo < 12) return plural(mo, 'month')
   const y = d / 365
-  return `${y < 10 ? y.toFixed(1).replace(/\.0$/, '') : Math.round(y)}y`
+  return `${y < 10 ? y.toFixed(1).replace(/\.0$/, '') : Math.round(y)} years`
 }
 
 export const isNew = (c: Card) => c.srs.state === State.New

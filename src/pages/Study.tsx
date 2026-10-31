@@ -11,21 +11,19 @@ import {
   answer,
   buildSession,
   deckCounts,
-  formatInterval,
   isNew,
   LEARN_AHEAD_MS,
   pickNext,
-  preview,
   Rating,
   type Grade,
   type Session,
 } from '@/srs'
 
 const BUTTONS: { grade: Grade; label: string; cls: string }[] = [
-  { grade: Rating.Again, label: 'Again', cls: 'again' },
-  { grade: Rating.Hard, label: 'Hard', cls: 'hard' },
-  { grade: Rating.Good, label: 'Good', cls: 'good' },
   { grade: Rating.Easy, label: 'Easy', cls: 'easy' },
+  { grade: Rating.Good, label: 'Good', cls: 'good' },
+  { grade: Rating.Hard, label: 'Hard', cls: 'hard' },
+  { grade: Rating.Again, label: 'Wrong', cls: 'again' },
 ]
 
 interface UndoState {
@@ -74,7 +72,6 @@ export function Study({ deckId }: { deckId: string }) {
   }, [waitUntil, session, advance])
 
   const current = currentId ? byId.get(currentId) : undefined
-  const intervals = useMemo(() => (current && flipped ? preview(current.srs) : null), [current, flipped])
 
   async function rate(grade: Grade) {
     if (!current || !session || busy) return
@@ -121,7 +118,7 @@ export function Study({ deckId }: { deckId: string }) {
     if (!current) return
     if (!flipped && (key === ' ' || key === 'Enter')) return setFlipped(true)
     if (flipped && (key === ' ' || key === 'Enter')) return void rate(Rating.Good)
-    if (flipped && ['1', '2', '3', '4'].includes(key)) return void rate(Number(key) as Grade)
+    if (flipped && ['1', '2', '3', '4'].includes(key)) return void rate(BUTTONS[Number(key) - 1].grade)
   })
 
   if (deck === null) return <NotFound />
@@ -204,14 +201,16 @@ export function Study({ deckId }: { deckId: string }) {
               Show answer
             </button>
           ) : (
+            <>
+            <p className="grades-caption">How hard was that?</p>
             <div className="grades">
               {BUTTONS.map((b) => (
                 <button key={b.grade} className={`grade ${b.cls}`} onClick={() => rate(b.grade)} disabled={busy}>
                   <span className="grade-label">{b.label}</span>
-                  <span className="grade-ivl">{intervals ? formatInterval(intervals[b.grade]) : ''}</span>
                 </button>
               ))}
             </div>
+            </>
           )}
         </div>
       </main>

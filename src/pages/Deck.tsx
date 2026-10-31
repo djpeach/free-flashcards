@@ -14,7 +14,7 @@ import { toast } from '@/toast'
 function status(c: Card, now: number): { label: string; cls: string } {
   if (isNew(c)) return { label: 'New', cls: 'new' }
   if (c.srs.due <= now) return { label: 'Due', cls: 'due' }
-  return { label: (isLearning(c) ? 'Learning, ' : '') + formatInterval(c.srs.due - now), cls: '' }
+  return { label: `${isLearning(c) ? 'Learning, due' : 'Due'} in ${formatInterval(c.srs.due - now)}`, cls: '' }
 }
 
 function Thumb({ id }: { id?: string }) {
@@ -86,11 +86,11 @@ export function DeckPage({ deckId }: { deckId: string }) {
             <>
               <a className="btn primary big block mode" href={`#/deck/${deckId}/study`}>
                 <span>Spaced Repetition</span>
-                <small>{dueNow > 0 ? `${dueNow} ${dueNow === 1 ? 'card' : 'cards'} ready` : 'All caught up for now'}</small>
+                <small>{dueNow > 0 ? `${dueNow} ${dueNow === 1 ? 'card' : 'cards'} ready for review` : 'All caught up for now'}</small>
               </a>
               <a className="btn big block mode" href={`#/deck/${deckId}/drill`}>
                 <span>Free Drill</span>
-                <small>Every card, shuffled. Doesn't change your schedule.</small>
+                <small>Randomized practice</small>
               </a>
             </>
           )}

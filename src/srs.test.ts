@@ -71,11 +71,12 @@ describe('session', () => {
 
 describe('formatInterval', () => {
   it('formats', () => {
-    expect(formatInterval(30_000)).toBe('1m')
-    expect(formatInterval(10 * MIN)).toBe('10m')
-    expect(formatInterval(3 * 60 * MIN)).toBe('3h')
-    expect(formatInterval(4 * DAY)).toBe('4d')
-    expect(formatInterval(90 * DAY)).toBe('3mo')
-    expect(formatInterval(400 * DAY)).toBe('1.1y')
+    expect(formatInterval(30_000)).toBe('1 min')
+    expect(formatInterval(10 * MIN)).toBe('10 min')
+    expect(formatInterval(3 * 60 * MIN)).toBe('3 hr')
+    expect(formatInterval(4 * DAY)).toBe('4 days')
+    expect(formatInterval(90 * DAY)).toBe('3 months')
+    expect(formatInterval(DAY)).toBe('1 day')
+    expect(formatInterval(400 * DAY)).toBe('1.1 years')
   })
 })

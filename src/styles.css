@@ -753,7 +753,7 @@ textarea {
   border: 0;
   border-radius: 14px;
   padding: 10px 4px;
-  min-height: 60px;
+  min-height: 56px;
   font: inherit;
   color: #fff;
   cursor: pointer;
@@ -777,9 +777,10 @@ textarea {
   font-weight: 650;
 }
 
-.grade-ivl {
-  font-size: 0.8rem;
-  opacity: 0.9;
+.grades-caption {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .grade.again {
@@ -873,6 +874,13 @@ textarea {
   display: flex;
   gap: 10px;
   align-items: baseline;
+}
+
+.grade-guide .when {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
 }
 
 .tag {
