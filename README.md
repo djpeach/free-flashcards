@@ -10,7 +10,7 @@ After that it opens full screen and works offline.
 ## What it does
 
 - Decks and cards, with text and images on either side
-- Spaced Repetition (Easy, Good, Hard, Wrong) using [FSRS](https://github.com/open-spaced-repetition/ts-fsrs), the same algorithm modern Anki uses
+- Spaced Repetition (Wrong, Hard, Ok, Easy) using [FSRS](https://github.com/open-spaced-repetition/ts-fsrs), the same algorithm modern Anki uses
 - Optional daily limit on new cards per deck (no limit by default), plus "learn 10 more" when you want extra
 - Free Drill: go through the whole deck shuffled, front first, back first, or mixed. Doesn't touch your schedule.
 - Undo the last answer

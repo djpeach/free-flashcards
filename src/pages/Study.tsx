@@ -20,10 +20,10 @@ import {
 } from '@/srs'
 
 const BUTTONS: { grade: Grade; label: string; cls: string }[] = [
-  { grade: Rating.Easy, label: 'Easy', cls: 'easy' },
-  { grade: Rating.Good, label: 'Good', cls: 'good' },
-  { grade: Rating.Hard, label: 'Hard', cls: 'hard' },
   { grade: Rating.Again, label: 'Wrong', cls: 'again' },
+  { grade: Rating.Hard, label: 'Hard', cls: 'hard' },
+  { grade: Rating.Good, label: 'Ok', cls: 'good' },
+  { grade: Rating.Easy, label: 'Easy', cls: 'easy' },
 ]
 
 interface UndoState {

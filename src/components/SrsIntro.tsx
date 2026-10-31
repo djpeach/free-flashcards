@@ -5,10 +5,10 @@ import type { Deck } from '@/db'
 import { formatInterval, newSrs, preview, Rating, type DeckCounts, type Grade } from '@/srs'
 
 const GRADES: { grade: Grade; cls: string; label: string; text: string }[] = [
-  { grade: Rating.Easy, cls: 'easy', label: 'Easy', text: 'Knew it instantly' },
-  { grade: Rating.Good, cls: 'good', label: 'Good', text: 'Got it' },
-  { grade: Rating.Hard, cls: 'hard', label: 'Hard', text: 'Barely got it' },
   { grade: Rating.Again, cls: 'again', label: 'Wrong', text: "Didn't know it" },
+  { grade: Rating.Hard, cls: 'hard', label: 'Hard', text: 'Barely got it' },
+  { grade: Rating.Good, cls: 'good', label: 'Ok', text: 'Got it' },
+  { grade: Rating.Easy, cls: 'easy', label: 'Easy', text: 'Knew it instantly' },
 ]
 
 export function SrsIntro({
