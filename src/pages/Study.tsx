@@ -1,0 +1,216 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { CardFace, FlipCard } from '@/components/CardFace'
+import { Header } from '@/components/Header'
+import { db, newCardsStudiedToday, type Card } from '@/db'
+import { useKeys } from '@/keys'
+import { NotFound } from '@/pages/Deck'
+import {
+  afterAnswer,
+  answer,
+  buildSession,
+  formatInterval,
+  isNew,
+  LEARN_AHEAD_MS,
+  pickNext,
+  preview,
+  Rating,
+  type Grade,
+  type Session,
+} from '@/srs'
+
+const BUTTONS: { grade: Grade; label: string; cls: string }[] = [
+  { grade: Rating.Again, label: 'Again', cls: 'again' },
+  { grade: Rating.Hard, label: 'Hard', cls: 'hard' },
+  { grade: Rating.Good, label: 'Good', cls: 'good' },
+  { grade: Rating.Easy, label: 'Easy', cls: 'easy' },
+]
+
+interface UndoState {
+  card: Card
+  reviewId: number
+  session: Session
+}
+
+export function Study({ deckId, extra }: { deckId: string; extra: number }) {
+  const deck = useLiveQuery(async () => (await db.decks.get(deckId)) ?? null, [deckId])
+  const cards = useLiveQuery(() => db.cards.where('deckId').equals(deckId).toArray(), [deckId])
+  const byId = useMemo(() => new Map((cards ?? []).map((c) => [c.id, c])), [cards])
+
+  const started = useRef(false)
+  const [session, setSession] = useState<Session | null>(null)
+  const [currentId, setCurrentId] = useState<string | null>(null)
+  const [waitUntil, setWaitUntil] = useState<number | null>(null)
+  const [flipped, setFlipped] = useState(false)
+  const [undo, setUndo] = useState<UndoState | null>(null)
+  const [reviewed, setReviewed] = useState(0)
+  const [busy, setBusy] = useState(false)
+
+  const advance = useCallback((s: Session, lastId: string | null) => {
+    const p = pickNext(s, lastId)
+    setFlipped(false)
+    if (p.id !== null) {
+      setCurrentId(p.id)
+      setWaitUntil(null)
+    } else {
+      setCurrentId(null)
+      setWaitUntil(p.waitUntil)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (started.current || !deck || !cards) return
+    started.current = true
+    newCardsStudiedToday(deckId).then((n) => {
+      const s = buildSession(cards, deck.newPerDay - n + extra)
+      setSession(s)
+      advance(s, null)
+    })
+  }, [deck, cards, deckId, extra, advance])
+
+  useEffect(() => {
+    if (!waitUntil || !session) return
+    const t = setTimeout(() => advance(session, null), Math.max(1000, waitUntil - LEARN_AHEAD_MS - Date.now()))
+    return () => clearTimeout(t)
+  }, [waitUntil, session, advance])
+
+  const current = currentId ? byId.get(currentId) : undefined
+  const intervals = useMemo(() => (current && flipped ? preview(current.srs) : null), [current, flipped])
+
+  async function rate(grade: Grade) {
+    if (!current || !session || busy) return
+    setBusy(true)
+    try {
+      const now = Date.now()
+      const srs = answer(current.srs, grade, now)
+      let reviewId = 0
+      await db.transaction('rw', db.cards, db.reviews, async () => {
+        await db.cards.update(current.id, { srs })
+        reviewId = (await db.reviews.add({ cardId: current.id, deckId, rating: grade, wasNew: isNew(current), at: now })) as number
+      })
+      const next = afterAnswer(session, current.id, srs, now)
+      setUndo({ card: current, reviewId, session })
+      setSession(next)
+      setReviewed((n) => n + 1)
+      advance(next, current.id)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function undoLast() {
+    if (!undo || busy) return
+    setBusy(true)
+    try {
+      await db.transaction('rw', db.cards, db.reviews, async () => {
+        await db.cards.put(undo.card)
+        await db.reviews.delete(undo.reviewId)
+      })
+      setSession(undo.session)
+      setCurrentId(undo.card.id)
+      setWaitUntil(null)
+      setFlipped(false)
+      setReviewed((n) => n - 1)
+      setUndo(null)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  useKeys((key) => {
+    if (key === 'z' || key === 'u') return void undoLast()
+    if (!current) return
+    if (!flipped && (key === ' ' || key === 'Enter')) return setFlipped(true)
+    if (flipped && (key === ' ' || key === 'Enter')) return void rate(Rating.Good)
+    if (flipped && ['1', '2', '3', '4'].includes(key)) return void rate(Number(key) as Grade)
+  })
+
+  if (deck === null) return <NotFound />
+  if (!deck || !cards || !session) return null
+
+  const remaining = session.pending.map((id) => byId.get(id)).filter((c): c is Card => !!c)
+  const newLeft = remaining.filter(isNew).length
+  const reviewLeft = remaining.length - newLeft
+  const back = { href: `/deck/${deckId}`, label: current ? 'Stop' : 'Deck' }
+  const undoBtn = undo && (
+    <button className="btn small ghost" onClick={undoLast} disabled={busy}>
+      Undo
+    </button>
+  )
+
+  if (!current) {
+    const waitMin = waitUntil ? Math.max(1, Math.ceil((waitUntil - LEARN_AHEAD_MS - Date.now()) / 60000)) : null
+    return (
+      <>
+        <Header back={back} title={deck.name} actions={undoBtn} />
+        <main className="page empty">
+          <div className="empty-art" aria-hidden="true">
+            {waitMin ? '⏳' : '🎉'}
+          </div>
+          <h2>{waitMin ? 'Nice, take a short break' : reviewed ? 'Done for now!' : 'Nothing due right now'}</h2>
+          <p className="muted">
+            {waitMin
+              ? `A few learning cards come back in about ${waitMin} min. Keep this open or check back later.`
+              : reviewed
+                ? `You reviewed ${reviewed} ${reviewed === 1 ? 'card' : 'cards'}.`
+                : 'Come back later, or practice without affecting your schedule.'}
+          </p>
+          <div className="stack">
+            <a className="btn primary" href={`#/deck/${deckId}`}>
+              Back to deck
+            </a>
+            <a className="btn" href={`#/deck/${deckId}/practice`}>
+              Practice anyway
+            </a>
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Header
+        back={back}
+        title={
+          <span className="study-counts">
+            <span className="c-new">{newLeft}</span>
+            <span className="c-learn">{session.learning.length}</span>
+            <span className="c-due">{reviewLeft}</span>
+          </span>
+        }
+        actions={undoBtn}
+      />
+      <main className="page study">
+        <FlipCard
+          key={current.id}
+          flipped={flipped}
+          onFlip={() => setFlipped((f) => !f)}
+          front={<CardFace text={current.front} imageId={current.frontImage} />}
+          back={
+            <>
+              {current.front && <div className="face-context clamp">{current.front}</div>}
+              <CardFace text={current.back} imageId={current.backImage} />
+            </>
+          }
+        />
+        <div className="answer-bar">
+          {!flipped ? (
+            <button className="btn primary big block" onClick={() => setFlipped(true)}>
+              Show answer
+            </button>
+          ) : (
+            <div className="grades">
+              {BUTTONS.map((b) => (
+                <button key={b.grade} className={`grade ${b.cls}`} onClick={() => rate(b.grade)} disabled={busy}>
+                  <span className="grade-label">{b.label}</span>
+                  <span className="grade-ivl">{intervals ? formatInterval(intervals[b.grade]) : ''}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </>
+  )
+}
