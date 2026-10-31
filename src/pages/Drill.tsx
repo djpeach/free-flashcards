@@ -33,11 +33,11 @@ function startRun(ids: string[], side: Side): Run {
   }
 }
 
-export function Practice({ deckId }: { deckId: string }) {
+export function Drill({ deckId }: { deckId: string }) {
   const deck = useLiveQuery(async () => (await db.decks.get(deckId)) ?? null, [deckId])
   const cards = useLiveQuery(() => db.cards.where('deckId').equals(deckId).toArray(), [deckId])
   const byId = useMemo(() => new Map((cards ?? []).map((c) => [c.id, c])), [cards])
-  const [side, setSide] = useState<Side>(() => (localStorage.getItem('practiceSide') as Side) || 'front')
+  const [side, setSide] = useState<Side>(() => (localStorage.getItem('drillSide') as Side) || 'front')
   const [run, setRun] = useState<Run | null>(null)
   const [flipped, setFlipped] = useState(false)
 
@@ -45,7 +45,7 @@ export function Practice({ deckId }: { deckId: string }) {
   const card: Card | undefined = head ? byId.get(head.id) : undefined
 
   function begin(ids: string[]) {
-    localStorage.setItem('practiceSide', side)
+    localStorage.setItem('drillSide', side)
     setRun(startRun(ids, side))
     setFlipped(false)
   }
@@ -77,7 +77,7 @@ export function Practice({ deckId }: { deckId: string }) {
   if (!run) {
     return (
       <>
-        <Header back={back} title="Practice" />
+        <Header back={back} title="Free Drill" />
         <main className="page stack">
           <p className="muted">
             Go through every card in <strong>{deck.name}</strong> in random order. Missed cards come back until you get them.
@@ -106,7 +106,7 @@ export function Practice({ deckId }: { deckId: string }) {
     const firstTry = run.total - run.missed.size
     return (
       <>
-        <Header back={back} title="Practice" />
+        <Header back={back} title="Free Drill" />
         <main className="page empty">
           <div className="empty-art" aria-hidden="true">
             {missed.length ? '💪' : '🏆'}
@@ -117,11 +117,11 @@ export function Practice({ deckId }: { deckId: string }) {
           <div className="stack">
             {missed.length > 0 && (
               <button className="btn primary" onClick={() => begin(missed)}>
-                Practice the {missed.length} I missed
+                Drill the {missed.length} I missed
               </button>
             )}
             <button className={`btn ${missed.length ? '' : 'primary'}`} onClick={() => begin(cards.map((c) => c.id))}>
-              Practice all again
+              Drill all again
             </button>
             <a className="btn ghost" href={`#/deck/${deckId}`}>
               Back to deck

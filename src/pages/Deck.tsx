@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { backupFileName, createBackup, saveFile } from '@/backup'
+import { Counts } from '@/components/Counts'
 import { Header } from '@/components/Header'
 import { toDelimited } from '@/csv'
 import { db, deleteDeck, newCardsStudiedToday, type Card } from '@/db'
@@ -51,7 +52,6 @@ export function DeckPage({ deckId }: { deckId: string }) {
 
   const counts = deckCounts(cards, deck.newPerDay - (newToday ?? 0), now)
   const dueNow = counts.review + counts.learning + counts.newCount
-  const newRemaining = cards.filter(isNew).length - counts.newCount
 
   async function exportDeck(includeProgress: boolean) {
     const data = await createBackup({ deckIds: [deckId], includeProgress })
@@ -77,42 +77,22 @@ export function DeckPage({ deckId }: { deckId: string }) {
         {deck.description && <p className="muted">{deck.description}</p>}
 
         <section className="card study-box">
-          <div className="counts">
-            <div>
-              <strong className="c-new">{counts.newCount}</strong>
-              <span>New</span>
-            </div>
-            <div>
-              <strong className="c-learn">{counts.learning}</strong>
-              <span>Learning</span>
-            </div>
-            <div>
-              <strong className="c-due">{counts.review}</strong>
-              <span>Review</span>
-            </div>
-          </div>
+          <Counts counts={counts} />
           {cards.length === 0 ? (
             <a className="btn primary big block" href={`#/deck/${deckId}/add`}>
               Add your first card
             </a>
-          ) : dueNow > 0 ? (
-            <a className="btn primary big block" href={`#/deck/${deckId}/study`}>
-              Study now
-            </a>
           ) : (
-            <div className="stack-sm center">
-              <p className="muted">All caught up for now. 🎉</p>
-              {newRemaining > 0 && (
-                <a className="btn block" href={`#/deck/${deckId}/study?extra=10`}>
-                  Learn 10 more new cards
-                </a>
-              )}
-            </div>
-          )}
-          {cards.length > 0 && (
-            <a className="btn block" href={`#/deck/${deckId}/practice`}>
-              Practice all cards
-            </a>
+            <>
+              <a className="btn primary big block mode" href={`#/deck/${deckId}/study`}>
+                <span>Spaced Repetition</span>
+                <small>{dueNow > 0 ? `${dueNow} ${dueNow === 1 ? 'card' : 'cards'} ready` : 'All caught up for now'}</small>
+              </a>
+              <a className="btn big block mode" href={`#/deck/${deckId}/drill`}>
+                <span>Free Drill</span>
+                <small>Every card, shuffled. Doesn't change your schedule.</small>
+              </a>
+            </>
           )}
         </section>
 
@@ -135,8 +115,8 @@ export function DeckPage({ deckId }: { deckId: string }) {
                 <a href={`#/card/${c.id}`} className="card-row">
                   <Thumb id={c.frontImage ?? c.backImage} />
                   <div className="card-row-text">
-                    <span className="clamp">{c.front || (c.frontImage ? '(image)' : '(blank)')}</span>
-                    <span className="muted small clamp">{c.back || (c.backImage ? '(image)' : '')}</span>
+                    <span className="clamp">{c.front || (c.frontImage ? '(image only)' : '(blank)')}</span>
+                    <span className="muted small clamp">{c.back || (c.backImage ? '(image only)' : '')}</span>
                   </div>
                   <span className={`pill ${s.cls}`}>{s.label}</span>
                 </a>

@@ -213,6 +213,11 @@ p {
   padding-left: 20px;
 }
 
+.steps {
+  margin: 0;
+  padding-left: 20px;
+}
+
 .steps li {
   margin: 4px 0;
 }
@@ -276,6 +281,17 @@ p {
 .btn.block {
   width: 100%;
   display: flex;
+}
+
+.btn.mode {
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn.mode small {
+  font-weight: 400;
+  font-size: 0.8rem;
+  opacity: 0.8;
 }
 
 .danger-text {
@@ -831,4 +847,57 @@ textarea {
     opacity: 0;
     transform: translate(-50%, -8px);
   }
+}
+
+.cta-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0 calc(env(safe-area-inset-bottom) + 20px);
+  margin-bottom: calc(-1 * (env(safe-area-inset-bottom) + 24px));
+  background: linear-gradient(to top, var(--bg) 75%, transparent);
+}
+
+.grade-guide {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grade-guide li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.tag {
+  flex-shrink: 0;
+  min-width: 56px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 7px;
+}
+
+.tag.again {
+  background: var(--again);
+}
+
+.tag.hard {
+  background: var(--hard);
+}
+
+.tag.good {
+  background: var(--good);
+}
+
+.tag.easy {
+  background: var(--easy);
 }

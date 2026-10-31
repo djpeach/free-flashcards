@@ -10,9 +10,9 @@ After that it opens full screen and works offline.
 ## What it does
 
 - Decks and cards, with text and images on either side
-- Spaced repetition (Again, Hard, Good, Easy) using [FSRS](https://github.com/open-spaced-repetition/ts-fsrs), the same algorithm modern Anki uses
+- Spaced Repetition (Again, Hard, Good, Easy) using [FSRS](https://github.com/open-spaced-repetition/ts-fsrs), the same algorithm modern Anki uses
 - Daily limit on new cards per deck, plus "learn 10 more" when you want extra
-- Practice mode: go through the whole deck shuffled, front first, back first, or mixed. Doesn't touch your schedule.
+- Free Drill: go through the whole deck shuffled, front first, back first, or mixed. Doesn't touch your schedule.
 - Undo the last answer
 - Import from text, CSV, spreadsheets, or Quizlet exports
 - Export a full backup, share a single deck (with or without your progress), or export a deck as CSV

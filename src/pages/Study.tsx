@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CardFace, FlipCard } from '@/components/CardFace'
 import { Header } from '@/components/Header'
+import { SrsIntro } from '@/components/SrsIntro'
 import { db, newCardsStudiedToday, type Card } from '@/db'
 import { useKeys } from '@/keys'
 import { NotFound } from '@/pages/Deck'
@@ -9,6 +10,7 @@ import {
   afterAnswer,
   answer,
   buildSession,
+  deckCounts,
   formatInterval,
   isNew,
   LEARN_AHEAD_MS,
@@ -32,12 +34,12 @@ interface UndoState {
   session: Session
 }
 
-export function Study({ deckId, extra }: { deckId: string; extra: number }) {
+export function Study({ deckId }: { deckId: string }) {
   const deck = useLiveQuery(async () => (await db.decks.get(deckId)) ?? null, [deckId])
   const cards = useLiveQuery(() => db.cards.where('deckId').equals(deckId).toArray(), [deckId])
+  const newToday = useLiveQuery(() => newCardsStudiedToday(deckId), [deckId])
   const byId = useMemo(() => new Map((cards ?? []).map((c) => [c.id, c])), [cards])
 
-  const started = useRef(false)
   const [session, setSession] = useState<Session | null>(null)
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [waitUntil, setWaitUntil] = useState<number | null>(null)
@@ -58,15 +60,12 @@ export function Study({ deckId, extra }: { deckId: string; extra: number }) {
     }
   }, [])
 
-  useEffect(() => {
-    if (started.current || !deck || !cards) return
-    started.current = true
-    newCardsStudiedToday(deckId).then((n) => {
-      const s = buildSession(cards, deck.newPerDay - n + extra)
-      setSession(s)
-      advance(s, null)
-    })
-  }, [deck, cards, deckId, extra, advance])
+  function start(extraNew: number) {
+    if (!deck || !cards || newToday === undefined) return
+    const s = buildSession(cards, deck.newPerDay - newToday + extraNew)
+    setSession(s)
+    advance(s, null)
+  }
 
   useEffect(() => {
     if (!waitUntil || !session) return
@@ -126,7 +125,12 @@ export function Study({ deckId, extra }: { deckId: string; extra: number }) {
   })
 
   if (deck === null) return <NotFound />
-  if (!deck || !cards || !session) return null
+  if (!deck || !cards || newToday === undefined) return null
+  if (!session) {
+    const counts = deckCounts(cards, deck.newPerDay - newToday)
+    const moreNew = cards.filter(isNew).length - counts.newCount
+    return <SrsIntro deck={deck} counts={counts} moreNew={moreNew} onStart={start} />
+  }
 
   const remaining = session.pending.map((id) => byId.get(id)).filter((c): c is Card => !!c)
   const newLeft = remaining.filter(isNew).length
@@ -153,14 +157,14 @@ export function Study({ deckId, extra }: { deckId: string; extra: number }) {
               ? `A few learning cards come back in about ${waitMin} min. Keep this open or check back later.`
               : reviewed
                 ? `You reviewed ${reviewed} ${reviewed === 1 ? 'card' : 'cards'}.`
-                : 'Come back later, or practice without affecting your schedule.'}
+                : 'Come back later, or use Free Drill to go through everything.'}
           </p>
           <div className="stack">
             <a className="btn primary" href={`#/deck/${deckId}`}>
               Back to deck
             </a>
-            <a className="btn" href={`#/deck/${deckId}/practice`}>
-              Practice anyway
+            <a className="btn" href={`#/deck/${deckId}/drill`}>
+              Free Drill
             </a>
           </div>
         </main>
