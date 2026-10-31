@@ -195,7 +195,7 @@ export function CardEditor({ deckId: initialDeckId, cardId }: { deckId?: string;
                 Save & Add Another
               </button>
               <button className="btn big" type="button" disabled={isEmpty || saving} onClick={() => save(false)}>
-                Save Card
+                Save & Done
               </button>
               {added > 0 && (
                 <p className="muted center small">
